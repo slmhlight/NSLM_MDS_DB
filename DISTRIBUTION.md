@@ -121,14 +121,50 @@ don't need to touch any text files:
 4. The key is written to `%USERPROFILE%\.mds_viewer_keys` — the user
    never has to enter it again on that machine.
 
-Receiving a new release:
-- New zip → unzip on top, or just drop the new `.enc` into `data/archive/`.
-- New key line → app pops the dialog again on next launch when it sees
-  the new `.enc` but no matching key. Paste, save, done.
+Receiving a new release — **fully automatic on next launch**:
+- App startup fetches the latest `.enc` list from GitHub (best-effort,
+  silent if offline). New `.enc` files land in the local
+  `data/archive/`.
+- App picks the newest release the user's keystore can decrypt. If
+  they don't have the matching key yet, it falls back to whatever
+  older release they DO have a key for — never a hard fail.
+- When the user receives the new key line (out-of-band), they click
+  **Add release key…** in the top-right of the main window, paste,
+  save. On the next restart the new release is loaded.
 
-This path is friendlier than asking users to find / edit a text file,
-and keeps the keystore in the user's profile (so it's not erased when
-they replace the app folder with a fresh unzip).
+This path keeps the keystore in the user's profile (so replacing the
+app folder with a fresh unzip doesn't erase it) and means a user can
+go from "received the zip" to "viewing data" without ever touching a
+text file.
+
+## Auto-update behavior
+
+On every startup the app does one short HTTP call to:
+
+```
+GET https://api.github.com/repos/slmhlight/NSLM_MDS_DB/contents/data/archive?ref=main
+```
+
+For each remote `.enc` not already on disk (or whose size doesn't
+match), it downloads to `<exe_dir>/data/archive/<filename>`. The
+encrypted blob is useless without a key, so prefetching is safe — the
+user only sees the new release if they also have the matching key.
+
+**Failure modes are all silent**:
+- no internet → log info, fall back to local files
+- GitHub rate-limit (60/h unauthenticated) → fall back
+- write-protected install location (Program Files w/o admin) → fall back
+- private repo without credentials → fall back
+
+**Disabling**: end users can set `MDS_NO_UPDATE=1` (env var) or pass
+`--no-update` on the command line.
+
+**Repo override**: `MDS_REPO=owner/repo` lets a fork swap the update
+source without rebuilding. `MDS_BRANCH=main` overrides the branch.
+
+For a fully offline deployment, set `MDS_NO_UPDATE=1` in a system /
+user env var on the target machine — the app then never tries to reach
+GitHub and only loads from whatever is in `data/archive/`.
 
 ## What happens to users without an update
 

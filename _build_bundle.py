@@ -50,25 +50,39 @@ What's in this folder
   README_DIST.txt             this file
   LICENSE_NOTICE.txt          licensing notice
 
-How to launch
--------------
+First launch
+------------
   1) Double-click MDS_Viewer.exe.
-  2) On first launch the app will pop a dialog asking for your
-     access key. Paste the line your maintainer sent you, e.g.:
+  2) A dialog pops asking for your access key. Paste the line your
+     maintainer sent you, e.g.:
          2026-05-24 = _XlpDYEpplRgqmDSYQnjht2WTnfLkCVR
-     The key is saved to your user profile
+     Click "Save key & continue".
+  3) The key is saved to your user profile
      (Windows: %USERPROFILE%\\.mds_viewer_keys) so you won't be
-     asked again.
-  3) The app picks the newest release your key can decrypt.
+     asked again on this machine.
+  4) The app picks the newest release your key can decrypt.
 
 Receiving a new release
 -----------------------
-  - You receive a new zip + a new key line from the maintainer.
-  - Replace the .exe folder (or just drop the new .enc into
-    data/archive/ of the existing install).
-  - Launch the .exe. The first time the new .enc shows up, the
-    dialog will pop again asking for the new key.
-  - Old keys remain valid for old releases - you can keep them.
+  Easy path - everything automatic except entering the new key:
+  1) Launch MDS_Viewer.exe. On startup it fetches any new .enc files
+     from GitHub (silent if you're offline - it just uses what's
+     already on disk).
+  2) When the maintainer sends you the new key line, click
+     "Add release key..." in the top-right of the main window,
+     paste the line, click Save.
+  3) Restart MDS_Viewer.exe. It now loads the new release.
+
+  You never need to touch a text file, and old keys keep working for
+  old releases.
+
+Offline use
+-----------
+  - If GitHub is unreachable (no internet, blocked network, etc.) the
+    app falls back to whatever .enc files are already in
+    data/archive/. No error.
+  - To disable the GitHub check entirely, set an environment variable
+    MDS_NO_UPDATE=1 (or pass --no-update on the command line).
 
 Manual key management (advanced)
 --------------------------------
@@ -80,11 +94,12 @@ Lines starting with # are comments. Add / remove / edit freely.
 
 Troubleshooting
 ---------------
-  - "This release is encrypted" dialog keeps coming back: your
-    keystore doesn't cover any of the .enc files present. Ask
-    the maintainer for a fresh key.
-  - App won't launch / Windows SmartScreen warning: right-click
-    the exe -> Properties -> "Unblock" -> OK, then launch.
+  - Key dialog keeps coming back: your keystore doesn't cover any of
+    the .enc files present. Ask the maintainer for the matching key.
+  - App won't launch / Windows SmartScreen warning: right-click the
+    exe -> Properties -> "Unblock" -> OK, then launch.
+  - "Add release key..." button does nothing: check that you pasted
+    the WHOLE line including both sides of the '=' sign.
 """
 
 

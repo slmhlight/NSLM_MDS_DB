@@ -64,6 +64,8 @@ def main():
                          help="Initial material name (default: first in DB)")
     parser.add_argument("--check-db", action="store_true",
                          help="Validate material_db.json then exit")
+    parser.add_argument("--no-update", action="store_true",
+                         help="Skip the startup GitHub fetch of new .enc files")
     args = parser.parse_args()
 
     setup_logging()
@@ -78,6 +80,23 @@ def main():
     log.info(f"sys.executable: {sys.executable}")
     log.info(f"frozen: {getattr(sys, 'frozen', False)}, "
               f"compiled: {'__compiled__' in globals()}")
+
+    # Best-effort: pull any new .enc files from GitHub before loading.
+    # Silent on network failure / rate-limit / write protection.
+    if not args.no_update:
+        try:
+            from update_check import sync_archive
+            new_n, present_n, fail_n = sync_archive()
+            if new_n:
+                log.info(f"update: downloaded {new_n} new .enc, "
+                          f"{present_n} already current, {fail_n} failed")
+            else:
+                log.info(f"update: nothing new ({present_n} current, "
+                          f"{fail_n} failed)")
+        except Exception as e:
+            log.info(f"update: check skipped ({type(e).__name__}: {e})")
+    else:
+        log.info("update: skipped (--no-update)")
 
     # Load material DB
     from resource_helper import load_material_db

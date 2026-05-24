@@ -98,6 +98,7 @@ MDS_VIEWER\
 ├── resource_helper.py            ← data/ lookup + decrypt
 ├── db_crypto.py                  ← AES-256-GCM crypto module + CLI
 ├── key_dialog.py                 ← GUI key-entry dialog (encrypted DB)
+├── update_check.py               ← best-effort GitHub .enc auto-fetch
 ├── report_generator.py           ← HTML report builder
 ├── lang.py                       ← i18n strings
 ├── contribute.py                 ← user-side contribution wizard
@@ -134,7 +135,12 @@ MDS_VIEWER\
 MDS_Viewer.exe                    # open first material
 MDS_Viewer.exe --material 316L    # specific material
 MDS_Viewer.exe --check-db         # validate DB, no GUI
+MDS_Viewer.exe --no-update        # skip the startup GitHub fetch
 ```
+
+`MDS_NO_UPDATE=1` env var also disables the auto-fetch. `MDS_REPO=owner/repo`
+points the updater at a different source. See **DISTRIBUTION.md** for the
+full auto-update behavior and offline notes.
 
 ---
 
@@ -143,6 +149,8 @@ MDS_Viewer.exe --check-db         # validate DB, no GUI
 - Category dropdown (Aluminium / Cobalt / Copper / Nickel / Steel /
   Titanium / Niobium / Other — Nikon-aligned)
 - Material dropdown (filtered by category)
+- **Add release key…** button (top-right) — paste a new key line any
+  time, no file editing needed
 - 4 tabs per material:
   1. Basic Physical / Thermal Properties
   2. Mechanical Properties by Heat Treatment (per-direction XY/Z)
@@ -151,6 +159,8 @@ MDS_Viewer.exe --check-db         # validate DB, no GUI
   4. Chemical Composition + References (TDS / standards)
 - Forces a light palette so the dialog renders correctly under
   OS-level dark mode
+- Best-effort startup fetch of new `.enc` releases from GitHub; silent
+  fallback if offline
 
 ---
 

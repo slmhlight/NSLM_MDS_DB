@@ -472,6 +472,37 @@ def open_mds_qt(material_name, properties, vendors=None, mds_urls=None,
         cat_lbl.setStyleSheet("color: #666; font-style: italic;")
         top.addWidget(cat_lbl)
         top.addStretch()
+
+        # ---- Right-hand: manual key management ----
+        # Lets the user paste a fresh `<key_id> = <passphrase>` line at any
+        # time, even if the current release loads fine. Useful when a new
+        # release was auto-fetched in the background but they don't have
+        # the matching key yet.
+        try:
+            key_btn = Q.QToolButton()
+            key_btn.setText("Add release key…")
+            key_btn.setToolTip(
+                "Paste a new release key you received from the maintainer.\n"
+                "The app will save it for next launch — restart afterward\n"
+                "to load the newer release the key unlocks.")
+            key_btn.setStyleSheet(
+                "QToolButton { padding: 3px 10px; "
+                " background:#eef2f8; border:1px solid #c0c4ca; "
+                " border-radius:3px; color:#1a3a6a; }"
+                "QToolButton:hover { background:#dde5f0; }")
+            def _on_add_key():
+                try:
+                    from key_dialog import open_add_key_dialog
+                    open_add_key_dialog(win)
+                except Exception as e:
+                    Q.QMessageBox.warning(
+                        win, "Could not open key dialog",
+                        f"{type(e).__name__}: {e}")
+            key_btn.clicked.connect(_on_add_key)
+            top.addWidget(key_btn)
+        except Exception:
+            pass  # button is optional — must not block dialog construction
+
         outer.addLayout(top)
         outer.addWidget(_h_separator(Q))
 

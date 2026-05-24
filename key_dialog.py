@@ -71,10 +71,32 @@ def append_key(key_id: str, passphrase: str) -> Path:
     return p
 
 
-def ask_user_for_key(parent=None, message: str = "") -> bool:
-    """Show a modal dialog. Returns True iff the user successfully saved a key.
+_DEFAULT_INTRO_HTML = (
+    "<b>This release is encrypted.</b><br>"
+    "Paste the key line your maintainer sent you below. "
+    "The line looks like:<br>"
+    "<code>2026-05-24 = _XlpDYEpplRgqmDSYQnjht2WTnfLkCVR</code><br><br>"
+    "The key will be saved to your user profile "
+    "(<code>~/.mds_viewer_keys</code>) so you only have to enter it once.<br>"
+    "Older keys stay valid for older releases."
+)
 
-    Caller should then re-attempt the encrypted-DB load.
+_ADD_KEY_INTRO_HTML = (
+    "<b>Add a new release access key.</b><br>"
+    "Paste the line your maintainer sent you below, e.g.:<br>"
+    "<code>2026-05-24 = _XlpDYEpplRgqmDSYQnjht2WTnfLkCVR</code><br><br>"
+    "Saved to <code>~/.mds_viewer_keys</code>. <b>Restart MDS Viewer</b> "
+    "afterward to load any newer release this key unlocks.<br>"
+    "Older keys stay valid - no harm in keeping them."
+)
+
+
+def ask_user_for_key(parent=None, message: str = "",
+                     title: str = None, intro_html: str = None) -> bool:
+    """Show a modal key-entry dialog. Returns True iff the user saved a key.
+
+    Caller should then re-attempt the encrypted-DB load (or, when called
+    from the add-key flow, prompt the user to restart).
     """
     from PySide6.QtWidgets import (
         QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPlainTextEdit,
@@ -83,21 +105,13 @@ def ask_user_for_key(parent=None, message: str = "") -> bool:
     from PySide6.QtGui import QPalette, QColor, QFont
 
     dlg = QDialog(parent)
-    dlg.setWindowTitle("MDS Viewer - Enter access key")
+    dlg.setWindowTitle(title or "MDS Viewer - Enter access key")
     dlg.setModal(True)
     dlg.resize(580, 260)
 
     layout = QVBoxLayout(dlg)
 
-    intro = QLabel(
-        "<b>This release is encrypted.</b><br>"
-        "Paste the key line your maintainer sent you below. "
-        "The line looks like:<br>"
-        "<code>2026-05-24 = _XlpDYEpplRgqmDSYQnjht2WTnfLkCVR</code><br><br>"
-        "The key will be saved to your user profile "
-        "(<code>~/.mds_viewer_keys</code>) so you only have to enter it once.<br>"
-        "Older keys stay valid for older releases."
-    )
+    intro = QLabel(intro_html or _DEFAULT_INTRO_HTML)
     intro.setWordWrap(True)
     layout.addWidget(intro)
 
@@ -172,3 +186,43 @@ def looks_like_keystore_problem(db_info: str) -> bool:
     """
     s = (db_info or "").lower()
     return ("keystore" in s) or ("no decryptable" in s)
+
+
+def open_add_key_dialog(parent=None) -> bool:
+    """Add-a-key flow for the running app (vs failure-recovery flow).
+
+    Shown from a menu / button. After save, a follow-up dialog suggests
+    restarting to pick up any newer release the key unlocks.
+    """
+    saved = ask_user_for_key(
+        parent=parent,
+        title="MDS Viewer - Add release key",
+        intro_html=_ADD_KEY_INTRO_HTML,
+    )
+    if saved:
+        try:
+            from PySide6.QtWidgets import QMessageBox
+            QMessageBox.information(
+                parent, "Key saved",
+                "The key was added to your keystore.\n\n"
+                "Restart MDS Viewer to load any newer release this "
+                "key unlocks. The current session will keep showing "
+                "whatever release it has already loaded."
+            )
+        except Exception:
+            pass
+    return saved
+
+
+def list_stored_key_ids() -> list[str]:
+    """Return the key_ids currently in ~/.mds_viewer_keys (sorted)."""
+    p = keystore_path()
+    if not p.is_file():
+        return []
+    out = []
+    for raw in p.read_text(encoding="utf-8").splitlines():
+        s = raw.strip()
+        if not s or s.startswith("#") or "=" not in s:
+            continue
+        out.append(s.split("=", 1)[0].strip())
+    return sorted(set(out))

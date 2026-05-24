@@ -91,6 +91,7 @@ set NUITKA_ARGS=%NUITKA_ARGS% --include-module=mds_dialog
 set NUITKA_ARGS=%NUITKA_ARGS% --include-module=qt_helper
 set NUITKA_ARGS=%NUITKA_ARGS% --include-module=lang
 set NUITKA_ARGS=%NUITKA_ARGS% --include-module=key_dialog
+set NUITKA_ARGS=%NUITKA_ARGS% --include-module=update_check
 set NUITKA_ARGS=%NUITKA_ARGS% --noinclude-pytest-mode=nofollow
 set NUITKA_ARGS=%NUITKA_ARGS% --noinclude-setuptools-mode=nofollow
 
