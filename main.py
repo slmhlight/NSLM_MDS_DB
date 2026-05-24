@@ -82,6 +82,31 @@ def main():
     # Load material DB
     from resource_helper import load_material_db
     db, db_info = load_material_db()
+
+    # If the load failed because of a keystore issue (no keys.txt /
+    # keystore doesn't cover any .enc), pop a GUI dialog instead of
+    # dying. Loop until the user either succeeds or hits Cancel.
+    if db is None:
+        try:
+            from key_dialog import ask_user_for_key, looks_like_keystore_problem
+            from qt_helper import get_qt
+            attempts = 0
+            while db is None and looks_like_keystore_problem(db_info):
+                qt = get_qt()
+                if qt is None:
+                    break  # no Qt — fall through to error message
+                attempts += 1
+                if attempts > 6:
+                    log.warning("giving up after 6 key-entry attempts")
+                    break
+                cont = ask_user_for_key(parent=None, message=db_info)
+                if not cont:
+                    log.info("user cancelled key entry")
+                    return 0
+                db, db_info = load_material_db()
+        except Exception as e:
+            log.exception(f"key dialog flow failed: {e}")
+
     if db is None:
         msg = (f"material_db.json not found or invalid.\n"
                 f"Expected location: {db_info}\n"

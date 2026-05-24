@@ -21,30 +21,53 @@ First run needs a keystore — see [Distribution / keystore](#distribution).
 
 ## Build standalone exe (Nuitka)
 
+Two build modes — pick based on how you distribute:
+
+### A) Standalone folder (`build_mds.bat`)
+
 ```bat
 build_mds.bat
 ```
 
-Produces `dist/MDS_Viewer/` containing:
+Produces `dist/MDS_Viewer/` — a folder containing the exe + bundled
+Python runtime + Qt DLLs (~85 MB total, ~14 MB exe). Zip the folder
+or wrap it in an installer. Fast startup (no extraction).
 
-```
-MDS_Viewer\
-├── MDS_Viewer.exe                ← main executable
-├── <Python runtime + Qt DLLs>    ← bundled by Nuitka
-├── data\archive\*.enc            ← encrypted DB releases
-├── keys.txt.example              ← keystore template
-├── README_DIST.txt               ← end-user instructions
-└── LICENSE_NOTICE.txt
+### B) Onefile zip (`build_mds_onefile.bat`) — recommended for end users
+
+```bat
+build_mds_onefile.bat
 ```
 
-Distribute the entire folder (zip or installer). Plain `material_db.json`
-is **never** copied into `dist/` — users only get encrypted releases.
+Produces:
 
-Faster iteration build:
+```
+dist\
+├── MDS_Viewer.exe                  single ~50 MB file (no DLLs alongside)
+├── MDS_Viewer_<release-tag>\        staging folder
+│   ├── MDS_Viewer.exe
+│   ├── data\archive\*.enc
+│   ├── README_DIST.txt
+│   └── LICENSE_NOTICE.txt
+└── MDS_Viewer_<release-tag>.zip     final distributable — send this
+```
+
+Send the `.zip`. On first launch the app pops a **GUI dialog** asking
+for the access-key line (no manual file editing) and saves it to
+`%USERPROFILE%\.mds_viewer_keys`. Slightly slower startup (Nuitka
+unpacks on first run, then caches).
+
+Plain `material_db.json`, `keys.txt`, `keys.master.txt` are **never**
+included in either build — explicit guards abort the build if they
+would be.
+
+### Build options
+
 ```bat
 set BUILD_DEBUG=1
-build_mds.bat
+build_mds.bat               REM or build_mds_onefile.bat
 ```
+→ MinGW + LTO off for faster iteration.
 
 Pre-flight: `data/archive/*.enc` must exist (build aborts otherwise).
 Generate one with `python db_crypto.py encrypt data/material_db.json
@@ -74,10 +97,14 @@ MDS_VIEWER\
 ├── qt_helper.py                  ← QApplication bootstrap
 ├── resource_helper.py            ← data/ lookup + decrypt
 ├── db_crypto.py                  ← AES-256-GCM crypto module + CLI
+├── key_dialog.py                 ← GUI key-entry dialog (encrypted DB)
 ├── report_generator.py           ← HTML report builder
 ├── lang.py                       ← i18n strings
 ├── contribute.py                 ← user-side contribution wizard
-├── build_mds.bat                 ← Nuitka standalone build
+├── build_mds.bat                 ← Nuitka standalone (folder) build
+├── build_mds_onefile.bat         ← Nuitka onefile + zip build
+├── _build_postwrite.py           ← post-build helper (standalone)
+├── _build_bundle.py              ← post-build helper (onefile zip)
 ├── data\
 │   ├── material_db.json          ← maintainer-only (gitignored)
 │   └── archive\*.enc             ← encrypted releases (committed)

@@ -83,7 +83,7 @@ python db_crypto.py encrypt data/material_db.json \
     --also-append-keystore keys.master.txt
 ```
 
-## User workflow
+## User workflow (source / dev)
 
 1. Clone the repo or install the app.
 2. Create `keys.txt` (or `~/.mds_viewer_keys`) with the line you were
@@ -100,6 +100,35 @@ python db_crypto.py encrypt data/material_db.json \
 When the maintainer issues a new release, the user **pulls the repo** to
 get the new `.enc` file, **appends the new key line** to their `keys.txt`,
 relaunches. Old releases remain accessible too (loader prefers newest).
+
+## User workflow (onefile zip distribution)
+
+End users who get the **onefile zip** (produced by `build_mds_onefile.bat`)
+don't need to touch any text files:
+
+1. Unzip `MDS_Viewer_<release>.zip` somewhere on disk. Contents:
+   ```
+   MDS_Viewer_<release>/
+     MDS_Viewer.exe
+     data/archive/*.enc
+     README_DIST.txt
+     LICENSE_NOTICE.txt
+   ```
+2. Double-click `MDS_Viewer.exe`.
+3. First-launch dialog pops asking for the access key. Paste the line
+   the maintainer sent (the exact same `<key_id> = <passphrase>` format),
+   click **Save key & continue**.
+4. The key is written to `%USERPROFILE%\.mds_viewer_keys` — the user
+   never has to enter it again on that machine.
+
+Receiving a new release:
+- New zip → unzip on top, or just drop the new `.enc` into `data/archive/`.
+- New key line → app pops the dialog again on next launch when it sees
+  the new `.enc` but no matching key. Paste, save, done.
+
+This path is friendlier than asking users to find / edit a text file,
+and keeps the keystore in the user's profile (so it's not erased when
+they replace the app folder with a fresh unzip).
 
 ## What happens to users without an update
 
