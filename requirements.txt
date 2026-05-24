@@ -1,0 +1,8 @@
+# MDS Viewer v1.0 - dependencies
+# Tier 1 (required)
+PySide6>=6.5
+# AES-256-GCM for encrypted material_db distribution
+cryptography>=41
+
+# Build only (not runtime)
+# nuitka>=2.0

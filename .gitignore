@@ -1,0 +1,55 @@
+# Plain material database stays local only — distribute the encrypted copy.
+data/material_db.json
+# Backups created during edits
+data/material_db.json.bak
+data/material_db.json.*bak*
+data/material_db.json.preseed
+data/material_db.json.preen
+data/material_db.json.skillbak
+# Legacy single-file format from v1 — release model is now archive/-based
+data/material_db.json.enc
+
+# User-specific keystore — never commit
+keys.txt
+.mds_viewer_keys
+# Maintainer's master keystore (different filename so it can't collide)
+keys.master.txt
+
+# Skill workspace artifacts (cached TDS, agent extractions, verify reports)
+_tds_workspace/
+
+# Python bytecode
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Log files
+log/
+_build.log
+
+# Build output
+build/
+dist/
+*.spec
+*.exe
+# Nuitka intermediate folders
+main.build/
+main.dist/
+main.onefile-build/
+.venv/
+
+# Claude per-machine settings (never commit)
+.claude/settings.local.json
+
+# Stale v1.0 manifest — kept locally but not committed (regenerate on demand)
+CHECKSUMS.txt
+
+# Skill-creator scratch
+skills/refresh-tds-catalog/__pycache__/

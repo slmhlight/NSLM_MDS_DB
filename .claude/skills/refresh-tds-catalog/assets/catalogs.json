@@ -1,0 +1,74 @@
+{
+  "_note": "Top-level catalog landing pages for each LPBF vendor. The skill discovers actual TDS file URLs from these — do NOT hardcode tds_link URLs here. Add/edit URLs as vendors reorganize their sites.",
+  "_updated": "2026-05-23",
+  "vendors": {
+    "eos": {
+      "_orientation": "material-first (each category page lists machines per material)",
+      "catalogs": [
+        "https://www.eos.info/metal-solutions/metal-materials/nickel-alloys",
+        "https://www.eos.info/metal-solutions/metal-materials/cobalt-chrome",
+        "https://www.eos.info/metal-solutions/metal-materials/copper",
+        "https://www.eos.info/metal-solutions/metal-materials/aluminium",
+        "https://www.eos.info/metal-solutions/metal-materials/other-steels",
+        "https://www.eos.info/metal-solutions/metal-materials/special-metal-materials",
+        "https://www.eos.info/metal-solutions/metal-materials/stainless-steel",
+        "https://www.eos.info/metal-solutions/metal-materials/titanium",
+        "https://www.eos.info/metal-solutions/metal-materials/tool-steel"
+      ]
+    },
+    "ge_additive": {
+      "_orientation": "machine-first (each printer page lists materials supported)",
+      "catalogs": [
+        "https://www.colibriumadditive.com/printers/l-pbf-printers/m2-series-5",
+        "https://www.colibriumadditive.com/printers/l-pbf-printers/m-line",
+        "https://www.colibriumadditive.com/printers/l-pbf-printers/x-line-2000r",
+        "https://www.colibriumadditive.com/printers/l-pbf-printers/mlab"
+      ]
+    },
+    "three_d_systems": {
+      "_orientation": "material finder (filter to metal)",
+      "_note": "3D Systems' /material-finder is a JS-rendered SPA AND has Cloudflare-style bot protection — both urllib and WebFetch return 403 for it. /materials/metal works via WebFetch but only lists 8 category labels (no per-material TDS URLs). Sitemap intentionally omits metal materials. There is no usable catalog crawl path. The skill keeps a known-good TDS URL list below as a fallback; periodically (every quarter or so) somebody needs to manually verify these via WebFetch and refresh additions/removals.",
+      "catalogs": [
+        "https://www.3dsystems.com/material-finder?type%5B0%5D=Metal"
+      ],
+      "_fallback_note": "Maintained manually. Visit https://www.3dsystems.com/material-finder?type[0]=Metal in a real browser periodically and refresh this list. Last refresh: 2026-05-23. Excluded marketing brochures (aerospace-brochure etc.) — TDS PDFs only.",
+      "fallback_tds_urls": [
+        "https://www.3dsystems.com/sites/default/files/2017-03/3D-Systems_LaserForm_CoCrF75%28A%29_DATASHEET_USEN_2017.03.13_WEB.pdf",
+        "https://www.3dsystems.com/sites/default/files/2017-06/3D-Systems_17-4PH_%28B%29_DMP_DATASHEET_USEN_2017.06.21_WEB.pdf",
+        "https://www.3dsystems.com/sites/default/files/2017-09/3D-Systems_LaserForm_17-4PH%28A%29_DATASHEET_USEN_2017.08.30_WEB.pdf",
+        "https://www.3dsystems.com/sites/default/files/2017-11/3d-systems-laserform-maraging-steel-%28a%29-datasheet-en-a4-web-2017-11-03.pdf",
+        "https://www.3dsystems.com/sites/default/files/2020-08/3d-systems-laserform-ti-gr1%28a%29-datasheet-a4-us-2020-06-02-a-print.pdf",
+        "https://www.3dsystems.com/sites/default/files/2020-08/3d-systems-laserform-ti-gr5%28a%29-datasheet-usen-2020-07-24-a-print.pdf",
+        "https://www.3dsystems.com/sites/default/files/2021-08/3d-systems-certified-m789%28a%29-datasheet-usen-2021-08-27-a-print.pdf",
+        "https://www.3dsystems.com/sites/default/files/2022-02/3d-systems-certified-scalmalloy%28a%29-datasheet-usen-2022-02-23-a-print.pdf",
+        "https://www.3dsystems.com/sites/default/files/2022-07/3d-systems-laserform-cocr%28b%29-datasheet-usen-2022-07-22-a-print.pdf",
+        "https://www.3dsystems.com/sites/default/files/2023-03/3d-systems-laserform-316L%28B%29-datasheet-usen-2023-03-07-a.pdf",
+        "https://www.3dsystems.com/sites/default/files/2023-05/3d-systems-certified-cucr2-usen-2023-04-26-a-print_0.pdf",
+        "https://www.3dsystems.com/sites/default/files/2023-07/3d-systems-certified-cucr1zra-material-datasheet-usen-2023-07-14-a-web_0.pdf",
+        "https://www.3dsystems.com/sites/default/files/2023-07/3d-systems-certified-grcop-42a-datasheet-usen-2023-07-14-a-web.pdf",
+        "https://www.3dsystems.com/sites/default/files/2023-12/3d-systems-grx-810a-mds-letter-us-reva-web.pdf",
+        "https://www.3dsystems.com/sites/default/files/2023-12/3d-systems-certifiedhxa-mds-letter-us-revb-web.pdf",
+        "https://www.3dsystems.com/sites/default/files/2023-12/3d-systems-laserform-316la-mds-letter-us-revc-web.pdf",
+        "https://www.3dsystems.com/sites/default/files/2023-12/3d-systems-laserform-alsi10mga-mds-letter-us-revd-web.pdf",
+        "https://www.3dsystems.com/sites/default/files/2023-12/3d-systems-laserform-alsi7mg0.6a-mds-letter-us-revc-web.pdf",
+        "https://www.3dsystems.com/sites/default/files/2023-12/3d-systems-laserform-ni625a-mds-letter-us-revb-web.pdf",
+        "https://www.3dsystems.com/sites/default/files/2023-12/3d-systems-laserform-ni718a-mds-letter-us-revd-web.pdf",
+        "https://www.3dsystems.com/sites/default/files/2023-12/3d-systems-tungstena-datasheet-usen-2023-03-16-a-print-2.pdf",
+        "https://www.3dsystems.com/sites/default/files/2024-07/3d-systems-certified-a6061-ram2-a-mds-letter-us-web.pdf",
+        "https://www.3dsystems.com/sites/default/files/2024-08/3d-systems-certified-c-103-a-mds-a4-us-rev-b.pdf"
+      ]
+    },
+    "nikon": {
+      "_orientation": "material-first (each category page lists machines + downloadable MDS PDFs)",
+      "catalogs": [
+        "https://nikon-slm-solutions.com/materials/aluminium/",
+        "https://nikon-slm-solutions.com/materials/cobalt/",
+        "https://nikon-slm-solutions.com/materials/copper/",
+        "https://nikon-slm-solutions.com/materials/nickel/",
+        "https://nikon-slm-solutions.com/materials/steel/",
+        "https://nikon-slm-solutions.com/materials/titanium/",
+        "https://nikon-slm-solutions.com/materials/niobium/"
+      ]
+    }
+  }
+}

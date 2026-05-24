@@ -1,0 +1,47 @@
+STL Analyzer v2.992.beta-5
+==========================
+Copyright (c) 2025-2026 STL Analyzer Team
+
+본 소프트웨어는 다음 오픈소스 라이브러리를 사용합니다.
+
+──────────────────────────────────────────────────────
+Qt (PySide6)         — LGPLv3
+  https://www.qt.io/qt-for-python
+  → LGPL 라이브러리이므로 사용자는 동일 버전의 새 빌드로
+    PySide6 를 교체할 수 있습니다.
+
+PyVista               — MIT
+  https://pyvista.org
+
+VTK                   — BSD 3-Clause
+  https://vtk.org
+
+trimesh               — MIT
+  https://trimsh.org
+
+NumPy / SciPy         — BSD 3-Clause
+  https://numpy.org / https://scipy.org
+
+matplotlib            — matplotlib license (BSD-style)
+  https://matplotlib.org
+
+Pillow                — HPND
+  https://python-pillow.org
+
+qtpy                  — MIT
+  https://github.com/spyder-ide/qtpy
+
+Nuitka                — Apache 2.0
+  https://nuitka.net
+
+Microsoft Visual C++ Redistributable
+  https://aka.ms/vs/17/release/vc_redist.x64.exe
+  → 실행 PC 에 설치 필요 (Python wheel 의존)
+
+Malgun Gothic (맑은 고딕)
+  Microsoft Corporation — Windows 기본 폰트
+  → 한글 표시용. 별도 라이선스 동의 후 배포 (대안: NanumGothic 등 자유 폰트)
+
+──────────────────────────────────────────────────────
+LGPL 라이브러리 (PySide6) 의 소스는 위 링크에서 다운로드 가능.
+사용자는 LGPL 라이브러리를 동일 버전의 새 빌드로 교체할 수 있습니다.

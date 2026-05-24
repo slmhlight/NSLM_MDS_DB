@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "type": "add_vendor_entry",
+  "submitted_by": "your-github-username",
+  "submitted_at": "2026-05-24T10:30:00Z",
+  "source": "https://vendor.com/path/to/tds.pdf",
+  "rationale": "One-sentence reason for adding this entry",
+  "payload": {
+    "target_material": "Inconel 625",
+    "entry": {
+      "manufacturer": "EOS",
+      "machine": "EOS M-290 HiPro",
+      "post_treatment": "as-built",
+      "layer_thickness_um": 50,
+      "yield_MPa": null,
+      "yield_z_MPa": null,
+      "uts_xy_MPa": null,
+      "uts_z_MPa": null,
+      "elongation_xy_pct": null,
+      "elongation_z_pct": null,
+      "hardness_HV": null,
+      "surface_ra_lo": null,
+      "surface_ra_hi": null,
+      "tds_link": "https://vendor.com/path/to/tds.pdf"
+    }
+  }
+}
