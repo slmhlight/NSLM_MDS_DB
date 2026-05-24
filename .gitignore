@@ -51,5 +51,8 @@ main.onefile-build/
 # Stale v1.0 manifest — kept locally but not committed (regenerate on demand)
 CHECKSUMS.txt
 
+# One-off maintainer scripts (BLT vendor scrape etc.) — useful locally, not for the repo
+_blt_*.py
+
 # Skill-creator scratch
 skills/refresh-tds-catalog/__pycache__/
