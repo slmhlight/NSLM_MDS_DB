@@ -50,17 +50,20 @@ DOWNLOAD_TIMEOUT = 30.0
 # Configuration / paths
 # =========================================================================
 
-def _archive_dir() -> Path:
-    """Where new .enc files should be saved. Mirrors resource_helper."""
+def _archive_dir() -> Path | None:
+    """Where auto-downloaded .enc files are written.
+
+    Returns the single trusted location: ``<exe-dir>/data/archive``.
+    Returns ``None`` if that folder doesn't exist — auto-fetch is
+    SILENTLY DISABLED when the distribution is incomplete (so we never
+    create false trust by auto-creating data folders).
+    """
     env = os.environ.get("STL_DATA_DIR")
     if env and os.path.isdir(env):
         return Path(env) / "archive"
-    frozen = (getattr(sys, "frozen", False)
-              or "__compiled__" in globals()
-              or os.path.basename(sys.executable).lower().startswith("mds_viewer"))
-    if frozen:
-        return Path(sys.executable).resolve().parent / "data" / "archive"
-    return Path(__file__).resolve().parent / "data" / "archive"
+    from app_paths import required_archive_dir
+    p = required_archive_dir()
+    return p if p.is_dir() else None
 
 
 def is_update_enabled() -> bool:
@@ -189,17 +192,16 @@ def sync_archive(repo: str | None = None,
     if not is_update_enabled():
         LOG.info("update: disabled via MDS_NO_UPDATE")
         return 0, 0, 0
+    archive_dir = _archive_dir()
+    if archive_dir is None:
+        LOG.info("update: <exe>/data/archive folder is absent — skipping "
+                  "(refusing to auto-create, distribution must include data/)")
+        return 0, 0, 0
     listing = fetch_archive_listing(repo, branch, path)
     if listing is None:
         return 0, 0, 0  # network/API failure — silently skip
     if not listing:
         LOG.info("update: remote archive folder empty / no .enc files")
-        return 0, 0, 0
-    archive_dir = _archive_dir()
-    try:
-        archive_dir.mkdir(parents=True, exist_ok=True)
-    except OSError as e:
-        LOG.info(f"update: cannot create {archive_dir}: {e}")
         return 0, 0, 0
     dl, present, fail = 0, 0, 0
     for item in listing:

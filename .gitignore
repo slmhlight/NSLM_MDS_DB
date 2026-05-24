@@ -53,6 +53,12 @@ CHECKSUMS.txt
 
 # One-off maintainer scripts (BLT vendor scrape etc.) — useful locally, not for the repo
 _blt_*.py
+_audit_*.py
+_blt_tds_images/
+
+# Daily worklogs / personal memos — local only
+WORKLOG_*.md
+worklogs/
 
 # Skill-creator scratch
 skills/refresh-tds-catalog/__pycache__/

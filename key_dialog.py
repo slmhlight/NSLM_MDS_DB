@@ -73,21 +73,19 @@ def append_key(key_id: str, passphrase: str) -> Path:
 
 _DEFAULT_INTRO_HTML = (
     "<b>This release is encrypted.</b><br>"
-    "Paste the key line your maintainer sent you below. "
-    "The line looks like:<br>"
-    "<code>2026-05-24 = _XlpDYEpplRgqmDSYQnjht2WTnfLkCVR</code><br><br>"
-    "The key will be saved to your user profile "
-    "(<code>~/.mds_viewer_keys</code>) so you only have to enter it once.<br>"
-    "Older keys stay valid for older releases."
+    "Paste the access-key line your maintainer sent you below. "
+    "The format is:<br>"
+    "<code>YYYY-MM-DD = &lt;your-key-here&gt;</code><br><br>"
+    "The pass-phrase part is masked. Once saved you won't be asked again."
 )
 
 _ADD_KEY_INTRO_HTML = (
     "<b>Add a new release access key.</b><br>"
-    "Paste the line your maintainer sent you below, e.g.:<br>"
-    "<code>2026-05-24 = _XlpDYEpplRgqmDSYQnjht2WTnfLkCVR</code><br><br>"
-    "Saved to <code>~/.mds_viewer_keys</code>. <b>Restart MDS Viewer</b> "
+    "Paste the line your maintainer sent you below.<br>"
+    "Format: <code>YYYY-MM-DD = &lt;your-key-here&gt;</code><br><br>"
+    "Saved to your user profile. <b>Restart MDS Viewer</b> "
     "afterward to load any newer release this key unlocks.<br>"
-    "Older keys stay valid - no harm in keeping them."
+    "Older keys stay valid — no harm in keeping them."
 )
 
 
@@ -97,17 +95,26 @@ def ask_user_for_key(parent=None, message: str = "",
 
     Caller should then re-attempt the encrypted-DB load (or, when called
     from the add-key flow, prompt the user to restart).
+
+    Security
+    --------
+    The passphrase part of the entered line is masked at all times by
+    default. A "Show" toggle reveals it temporarily for verification.
+    The visible-only feedback is the parsed key_id (the date prefix),
+    so the user can confirm they pasted the right release without ever
+    exposing the secret on screen.
     """
     from PySide6.QtWidgets import (
-        QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPlainTextEdit,
-        QPushButton, QMessageBox,
+        QDialog, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit,
+        QPushButton, QMessageBox, QCheckBox,
     )
     from PySide6.QtGui import QPalette, QColor, QFont
 
     dlg = QDialog(parent)
     dlg.setWindowTitle(title or "MDS Viewer - Enter access key")
     dlg.setModal(True)
-    dlg.resize(580, 260)
+    # Block close-on-Escape so user must explicitly Cancel.
+    dlg.resize(540, 230)
 
     layout = QVBoxLayout(dlg)
 
@@ -121,12 +128,43 @@ def ask_user_for_key(parent=None, message: str = "",
         warn.setStyleSheet("color:#a04020; font-style:italic;")
         layout.addWidget(warn)
 
-    edit = QPlainTextEdit()
-    edit.setPlaceholderText("2026-05-24 = _XlpDYEpplRgqmDSYQnjht2WTnfLkCVR")
+    # Masked single-line input + "Show" toggle.
+    row = QHBoxLayout()
+    edit = QLineEdit()
+    edit.setEchoMode(QLineEdit.Password)
+    edit.setPlaceholderText("paste the line: YYYY-MM-DD = <key>")
     mono = QFont("Consolas")
     mono.setStyleHint(QFont.Monospace)
     edit.setFont(mono)
-    layout.addWidget(edit)
+    row.addWidget(edit, 1)
+
+    show_chk = QCheckBox("Show")
+    show_chk.setToolTip("Temporarily reveal the pasted line for verification")
+    def _on_show(state):
+        edit.setEchoMode(QLineEdit.Normal if show_chk.isChecked()
+                          else QLineEdit.Password)
+    show_chk.stateChanged.connect(_on_show)
+    row.addWidget(show_chk)
+    layout.addLayout(row)
+
+    # Live key_id feedback — visible-safe (no passphrase shown).
+    id_status = QLabel(" ")
+    id_status.setStyleSheet("color:#1a3a6a; padding-left:4px;")
+    layout.addWidget(id_status)
+
+    def _on_text_changed(text):
+        parsed = parse_key_line(text)
+        if not text.strip():
+            id_status.setText(" ")
+            id_status.setStyleSheet("color:#666;")
+        elif parsed is None:
+            id_status.setText("✗  format not recognised — expected: YYYY-MM-DD = <key>")
+            id_status.setStyleSheet("color:#a04020;")
+        else:
+            kid, _ = parsed
+            id_status.setText(f"✓  detected key ID:  {kid}   (passphrase hidden)")
+            id_status.setStyleSheet("color:#1f7a3f; font-weight:bold;")
+    edit.textChanged.connect(_on_text_changed)
 
     btns = QHBoxLayout()
     btn_cancel = QPushButton("Cancel")
@@ -140,13 +178,14 @@ def ask_user_for_key(parent=None, message: str = "",
     state = {"saved": False}
 
     def on_ok():
-        parsed = parse_key_line(edit.toPlainText())
+        parsed = parse_key_line(edit.text())
         if parsed is None:
             QMessageBox.warning(
                 dlg, "Invalid key",
                 "Couldn't recognise a key line in your input.\n\n"
-                "Expected format:\n  <key_id> = <passphrase>\n\n"
-                "Example:\n  2026-05-24 = _XlpDYEpplRgqmDSYQnjht2WTnfLkCVR"
+                "Expected format:  <key_id> = <passphrase>\n"
+                "                  (e.g. YYYY-MM-DD = <key>)\n\n"
+                "Make sure both sides of the '=' are present."
             )
             return
         kid, pw = parsed

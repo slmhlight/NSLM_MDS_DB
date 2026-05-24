@@ -18,9 +18,9 @@ import argparse
 
 
 def setup_logging():
-    """File log next to exe; console log to stderr."""
-    log_dir = _find_log_dir()
-    os.makedirs(log_dir, exist_ok=True)
+    """File log under %LOCALAPPDATA%\\MDS_Viewer\\log (frozen) or repo/log (dev)."""
+    from app_paths import log_dir as _ld
+    log_dir = str(_ld())
     log_path = os.path.join(log_dir, "mds_viewer.log")
 
     fmt = logging.Formatter(
@@ -77,6 +77,15 @@ def main():
     except Exception as e:
         log.warning(f"set_language('en') failed: {e}")
     log.info("=== MDS Viewer v1.0 starting ===")
+    # Startup diagnostic — dump every path-related variable so a misbehaving
+    # build can be debugged from one log file.
+    try:
+        from app_paths import runtime_report
+        rr = runtime_report()
+        for k, v in rr.items():
+            log.info(f"  diag {k}: {v}")
+    except Exception as e:
+        log.warning(f"runtime_report failed: {e}")
     log.info(f"sys.executable: {sys.executable}")
     log.info(f"frozen: {getattr(sys, 'frozen', False)}, "
               f"compiled: {'__compiled__' in globals()}")
@@ -127,9 +136,7 @@ def main():
             log.exception(f"key dialog flow failed: {e}")
 
     if db is None:
-        msg = (f"material_db.json not found or invalid.\n"
-                f"Expected location: {db_info}\n"
-                f"Place the file at: <exe>/data/material_db.json")
+        msg = (f"MDS Viewer cannot start.\n\n{db_info}")
         log.error(msg)
         try:
             from qt_helper import get_qt
