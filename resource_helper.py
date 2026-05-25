@@ -87,6 +87,7 @@ def load_material_db():
     from db_crypto import (
         load_keystore, read_key_id, decrypt_file, _sort_key_for_filename,
     )
+    from update_check import MAX_ARCHIVES_KEPT
 
     files = []
     for f in archive_dir.glob("*.enc"):
@@ -102,6 +103,9 @@ def load_material_db():
         )
 
     files.sort(key=lambda fk: _sort_key_for_filename(fk[0]), reverse=True)
+    # Cap the search to the newest N releases — keeps loader behaviour
+    # consistent with update_check's local archive pruning.
+    files = files[:MAX_ARCHIVES_KEPT]
 
     keystore, _ks_path = load_keystore()
     if not keystore:

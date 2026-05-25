@@ -69,6 +69,18 @@
         "https://nikon-slm-solutions.com/materials/titanium/",
         "https://nikon-slm-solutions.com/materials/niobium/"
       ]
+    },
+    "blt": {
+      "_orientation": "single-page list of per-material catalogue cards; each card links to /powder/<slug>/",
+      "_extraction_method": "Vision OCR on per-material summary image (PDF TDS is gated behind contact form). Each /powder/<slug>/ page embeds a <slug>_2-<W>x<H>.png chart showing particle-size cuts + flow + sphericity + oxygen + UTS/YS/elong range. Requires browser User-Agent and a Referer header to download the image — bare requests get 404. See references/blt.md.",
+      "_fetch_headers": {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Referer": "https://www.xa-blt.com/en/"
+      },
+      "_value_convention": "BLT publishes mechanical values as ranges (lo-hi). The skill stores the midpoint in the standard yield_MPa / uts_xy_MPa / elongation_pct fields and preserves the raw lo/hi pair in vendor_entry._value_ranges. Mechanical values apply to the annealed condition for every powder EXCEPT 420 stainless (hardened, HRC 50-58 → HV via ASTM E140).",
+      "catalogs": [
+        "https://www.xa-blt.com/en/powders/"
+      ]
     }
   }
 }

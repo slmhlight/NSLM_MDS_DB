@@ -45,6 +45,11 @@ DEFAULT_PATH = "data/archive"
 LISTING_TIMEOUT = 5.0
 DOWNLOAD_TIMEOUT = 30.0
 
+# Cap local archive at this many newest releases. Older ones are pruned
+# after each successful sync. The loader honours the same cap so that
+# disk state and loader visibility never diverge.
+MAX_ARCHIVES_KEPT = 5
+
 
 # =========================================================================
 # Configuration / paths
@@ -219,4 +224,23 @@ def sync_archive(repo: str | None = None,
             LOG.info(f"update: downloaded {item['name']} ({item['size']} B)")
         else:
             fail += 1
+
+    # Cap local archive at MAX_ARCHIVES_KEPT (newest by filename-date).
+    _prune_archive(archive_dir, MAX_ARCHIVES_KEPT)
     return dl, present, fail
+
+
+def _prune_archive(archive_dir: Path, keep: int) -> int:
+    """Delete .enc files beyond the newest `keep`. Returns count removed."""
+    from db_crypto import _sort_key_for_filename
+    files = sorted(archive_dir.glob("*.enc"),
+                   key=_sort_key_for_filename, reverse=True)
+    removed = 0
+    for f in files[keep:]:
+        try:
+            f.unlink()
+            LOG.info(f"update: pruned old archive {f.name} (cap {keep})")
+            removed += 1
+        except OSError as e:
+            LOG.info(f"update: cannot prune {f.name}: {e}")
+    return removed
