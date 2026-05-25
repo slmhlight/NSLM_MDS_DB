@@ -62,3 +62,34 @@ worklogs/
 
 # Skill-creator scratch
 skills/refresh-tds-catalog/__pycache__/
+
+# ======================================================================
+# Repo is distribution-only — encrypted .enc files only.
+# Everything below stays local on the maintainer's machine and is NOT
+# uploaded. Source code, build scripts, the refresh skill, contribution
+# tooling, and maintainer-side docs are all excluded.
+# Re-enable selectively if collaboration on source ever moves to this
+# repo, or move source to a private companion repo.
+# ======================================================================
+
+# Source code (all .py)
+*.py
+
+# Build scripts + helpers
+*.bat
+*.cmd
+
+# Maintainer-side docs (README.md and LICENSE_NOTICE.txt stay tracked)
+CONTRIBUTING.md
+DISTRIBUTION.md
+requirements.txt
+
+# Refresh-TDS skill (maintainer-only tooling)
+.claude/
+
+# Contribution CLI infra (replaced in-app by Submit TDS data dialog)
+contributions/
+
+# Worklogs / personal notes
+WORKLOG_*.md
+worklogs/
