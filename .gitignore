@@ -54,7 +54,18 @@ CHECKSUMS.txt
 # One-off maintainer scripts (BLT vendor scrape etc.) — useful locally, not for the repo
 _blt_*.py
 _audit_*.py
+_velo3d_*.py
+_fix_*.py
 _blt_tds_images/
+
+# Vendor-supplied TDS PDFs that aren't publicly linked (e.g. Velo3D).
+# These are the source-of-truth for extraction but MUST NOT be uploaded
+# — they are licensed material from the vendor.
+input/
+*.pdf
+
+# Local report sanity-check output (G audit artefacts)
+_test_reports/
 
 # Daily worklogs / personal memos — local only
 WORKLOG_*.md
