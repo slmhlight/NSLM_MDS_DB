@@ -67,6 +67,18 @@ input/
 # Local report sanity-check output (G audit artefacts)
 _test_reports/
 
+# Build pipeline artefacts — distribution zip + build log
+release/
+build_log.txt
+
+# Maintainer-side schematic / overview docs (local reference only)
+docs/
+
+# Distribution / licensing meta — kept locally and bundled into dist,
+# but NOT exposed via this repo (repo is opaque encrypted-blob channel).
+LICENSE_NOTICE.txt
+licenses/
+
 # Daily worklogs / personal memos — local only
 WORKLOG_*.md
 worklogs/
