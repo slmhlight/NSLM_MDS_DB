@@ -67,12 +67,29 @@ input/
 # Local report sanity-check output (G audit artefacts)
 _test_reports/
 
-# Static machine-hardware catalog — bundled into dist next to the exe,
-# but NOT pushed to this repo (machine specs rarely change; not a release
-# artefact). Stays local on the maintainer's machine like material_db.json.
+# Static machine-hardware catalog. The plaintext stays local; the catalog
+# now reaches users as data/archive/machines_<date>.enc, which IS pushed.
 data/machines.json
 data/machines.json.*
 data/machine_images/
+# Derived image set that goes inside the .enc — the pictures themselves must
+# never land here, they would say plainly what this repo is.
+data/machine_images_opt/
+
+# Third-party powder supplier reference — same treatment as machines.json:
+# plaintext local, powders_<date>.enc published.
+data/powders.json
+data/powders.json.*
+
+# Machine-catalog refresh skill workspace
+_machine_workspace/
+
+# Maintainer documentation. This repo is a data channel and nothing else;
+# a file explaining the release scheme defeats that.
+DATA_RELEASE.md
+DISTRIBUTION.md
+CONTRIBUTING.md
+WORKLOG_*.md
 
 # Build pipeline artefacts — distribution zip + build log
 release/
