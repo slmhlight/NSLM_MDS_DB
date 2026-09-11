@@ -140,3 +140,10 @@ contributions/
 # Worklogs / personal notes
 WORKLOG_*.md
 worklogs/
+
+# Launch-test helper (lives in the source repo; not a distribution artefact)
+_launch_test.ps1
+
+# Archives whose key_id has no key any more. Kept locally as a record of
+# what was retired; they cannot be opened and are not republished.
+data/archive_retired/
