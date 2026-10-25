@@ -63,6 +63,9 @@ _blt_tds_images/
 # — they are licensed material from the vendor.
 input/
 *.pdf
+# Reference PDFs attached in the desktop app. They are published only
+# encrypted, by _pack_refs_enc.py, into data/archive/refs/.
+data/refs/
 
 # Local report sanity-check output (G audit artefacts)
 _test_reports/
@@ -111,12 +114,12 @@ worklogs/
 skills/refresh-tds-catalog/__pycache__/
 
 # ======================================================================
-# Repo is distribution-only — encrypted .enc files only.
+# Repo is distribution-only: the encrypted .enc payloads, their
+# manifest.json, and the static web viewer GitHub Pages serves from it
+# (index.html, .nojekyll, web/). The viewer holds no data and no key.
 # Everything below stays local on the maintainer's machine and is NOT
 # uploaded. Source code, build scripts, the refresh skill, contribution
 # tooling, and maintainer-side docs are all excluded.
-# Re-enable selectively if collaboration on source ever moves to this
-# repo, or move source to a private companion repo.
 # ======================================================================
 
 # Source code (all .py)

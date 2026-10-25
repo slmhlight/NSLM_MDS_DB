@@ -1,0 +1,141 @@
+{
+ "format": 1,
+ "payloads": [
+  {
+   "file": "machines_2026-09-10.enc",
+   "kind": "machines",
+   "date": "2026-09-10",
+   "key_id": "2026-09-10",
+   "size": 10141241,
+   "v": "d4eba55a46f1"
+  },
+  {
+   "file": "machines_2026-08-26.enc",
+   "kind": "machines",
+   "date": "2026-08-26",
+   "key_id": "2026-08-26",
+   "size": 10141241,
+   "v": "764cdb05c3e7"
+  },
+  {
+   "file": "machines_2026-08-13.enc",
+   "kind": "machines",
+   "date": "2026-08-13",
+   "key_id": "2026-08-13",
+   "size": 10141241,
+   "v": "ad7ece303fce"
+  },
+  {
+   "file": "material_db_2026-10-13.enc",
+   "kind": "material_db",
+   "date": "2026-10-13",
+   "key_id": "2026-09-10",
+   "size": 723722,
+   "v": "48a3a0a9f903"
+  },
+  {
+   "file": "material_db_2026-09-29.enc",
+   "kind": "material_db",
+   "date": "2026-09-29",
+   "key_id": "2026-09-10",
+   "size": 718001,
+   "v": "b692ec33a0be"
+  },
+  {
+   "file": "material_db_2026-09-11.enc",
+   "kind": "material_db",
+   "date": "2026-09-11",
+   "key_id": "2026-09-10",
+   "size": 667339,
+   "v": "c75b002410bd"
+  },
+  {
+   "file": "material_db_2026-09-10.enc",
+   "kind": "material_db",
+   "date": "2026-09-10",
+   "key_id": "2026-09-10",
+   "size": 653371,
+   "v": "06939babedac"
+  },
+  {
+   "file": "material_db_2026-08-26.enc",
+   "kind": "material_db",
+   "date": "2026-08-26",
+   "key_id": "2026-08-26",
+   "size": 603428,
+   "v": "507a69c7165b"
+  },
+  {
+   "file": "material_db_2026-08-13.enc",
+   "kind": "material_db",
+   "date": "2026-08-13",
+   "key_id": "2026-08-13",
+   "size": 596918,
+   "v": "269de0bcd60a"
+  },
+  {
+   "file": "material_db_2026-07-18.enc",
+   "kind": "material_db",
+   "date": "2026-07-18",
+   "key_id": "2026-07-18",
+   "size": 596918,
+   "v": "d3d47e0d9087"
+  },
+  {
+   "file": "material_db_2026-05-26.enc",
+   "kind": "material_db",
+   "date": "2026-05-26",
+   "key_id": "2026-05-26",
+   "size": 568334,
+   "v": "e4b44dbf3d96"
+  },
+  {
+   "file": "material_db_2026-05-25.enc",
+   "kind": "material_db",
+   "date": "2026-05-25",
+   "key_id": "2026-05-25",
+   "size": 431889,
+   "v": "6b2fa3683c4f"
+  },
+  {
+   "file": "material_db_2026-05-24.enc",
+   "kind": "material_db",
+   "date": "2026-05-24",
+   "key_id": "2026-05-24",
+   "size": 402392,
+   "v": "f25762d9f6aa"
+  },
+  {
+   "file": "powders_2026-09-10.enc",
+   "kind": "powders",
+   "date": "2026-09-10",
+   "key_id": "2026-09-10",
+   "size": 62038,
+   "v": "6aeaeff7136a"
+  },
+  {
+   "file": "powders_2026-08-26.enc",
+   "kind": "powders",
+   "date": "2026-08-26",
+   "key_id": "2026-08-26",
+   "size": 61372,
+   "v": "4db2737392b3"
+  },
+  {
+   "file": "powders_2026-08-13.enc",
+   "kind": "powders",
+   "date": "2026-08-13",
+   "key_id": "2026-08-13",
+   "size": 61372,
+   "v": "e3c19a3b1b17"
+  },
+  {
+   "file": "ui/tr_2026-09-10.enc",
+   "kind": "tr",
+   "date": "2026-10-13",
+   "key_id": "2026-09-10",
+   "size": 4934,
+   "v": "e53432b9fcc1"
+  }
+ ]
+}
