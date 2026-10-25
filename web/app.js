@@ -1,12 +1,18 @@
 // MDS Viewer, web edition. Finds the newest material release this browser
 // holds a key for (data/archive/manifest.json lists them, newest first),
 // decrypts it in the page and shows the material window. The key is asked
-// for once and kept in a cookie; nothing here or in the repo contains one.
+// for once and kept in this browser's storage; nothing here or in the repo
+// contains one.
 import { readKeystore, writeKeystore, clearKeystore, decryptPayload, parseKeyLine } from "./crypto.js";
 import { parsePyJson } from "./py.js";
-import { h, modal, messageBox, installTooltips, setDbTranslations, storageGet, storageSet } from "./util.js";
+import { h, modal, messageBox, progressDialog, installTooltips, setDbTranslations, storageGet, storageSet } from "./util.js";
 import { mountMaterialView } from "./material.js";
 import { RefStore } from "./refs.js";
+import { createCatalogs } from "./catalog.js";
+import { openMachinesWindow } from "./machines.js";
+import { openPowdersWindow } from "./powders.js";
+import { openSubmitDialog } from "./submit.js";
+import { resetWindowHistory } from "./window.js";
 
 const root = document.getElementById("app");
 const mq = matchMedia("(max-width: 959px)");   // below this the two columns get too narrow
@@ -17,18 +23,33 @@ let keystore = readKeystore();
 let loaded = null;                    // {payload, db}
 let view = null;
 const refs = new RefStore(fetchBytes);
+const catalogs = createCatalogs({ fetchBytes, manifest: () => manifest, keystore: () => keystore });
 
 // ---- fetching: payloads are immutable per ?v=, the manifest is not ----
 const fetched = new Map();
 
-function fetchBytes(path, v) {
+// onProgress(bytesSoFar) follows a download the first time it is fetched.
+function fetchBytes(path, v, onProgress) {
   const url = new URL(path, document.baseURI);
   if (v) url.searchParams.set("v", v);
   if (!fetched.has(url.href)) {
-    // credentials: "omit" keeps the key cookie off these requests.
+    // credentials: "omit": no cookie or other credential goes with these.
     const p = fetch(url, { credentials: "omit" }).then(async (r) => {
       if (!r.ok) throw new Error(`${path}: HTTP ${r.status}`);
-      return new Uint8Array(await r.arrayBuffer());
+      if (!onProgress || !r.body) return new Uint8Array(await r.arrayBuffer());
+      const chunks = [];
+      let got = 0;
+      for (const reader = r.body.getReader(); ;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        chunks.push(value);
+        got += value.length;
+        onProgress(got);
+      }
+      const out = new Uint8Array(got);
+      let at = 0;
+      for (const c of chunks) { out.set(c, at); at += c.length; }
+      return out;
     });
     p.catch(() => fetched.delete(url.href));
     fetched.set(url.href, p);
@@ -96,6 +117,7 @@ function applyLayout() {
   const mode = layoutMode();
   root.classList.toggle("mobile", mode === "mobile");
   root.classList.toggle("desktop", mode === "desktop");
+  document.documentElement.dataset.layout = mode;         // for the catalog windows
   const btn = root.querySelector(".tool.layout");
   if (btn) {
     btn.textContent = mode === "mobile" ? "Desktop view" : "Mobile view";
@@ -122,8 +144,18 @@ function failure(text) {
     h("button", { class: "btn", type: "button", onclick: () => location.reload() }, "Retry")));
 }
 
+// The key dialog was closed without a key: wait here until asked again.
+function locked() {
+  return new Promise((resolve) => {
+    const again = h("button", { class: "btn default", type: "button", onclick: () => resolve() }, "Enter access key…");
+    root.replaceChildren(h("div", { class: "splash" }, h("div", { class: "splash-title" }, "MDS Viewer"),
+      h("div", { class: "splash-text" }, "Locked — the data opens with a release access key."), again));
+    again.focus();
+  });
+}
+
 // key_dialog.ask_user_for_key, with the key checked against a release
-// before it is saved.
+// before it is saved. Resolves with the key_id, or undefined if closed.
 function keyDialog({ add = false, message = "" } = {}) {
   const title = add ? "MDS Viewer - Add release key" : "MDS Viewer - Enter access key";
   return modal(title, (close) => {
@@ -197,7 +229,7 @@ function keyDialog({ add = false, message = "" } = {}) {
       h("label", { class: "check remember" }, remember, "Remember on this device (90 days)"),
       error,
       h("div", { class: "dialog-buttons" },
-        add ? h("button", { class: "btn", type: "button", onclick: () => close(undefined) }, "Cancel") : null,
+        h("button", { class: "btn", type: "button", onclick: () => close(undefined) }, add ? "Cancel" : "Close"),
         ok));
 
     const saved = Object.keys(keystore);
@@ -211,7 +243,7 @@ function keyDialog({ add = false, message = "" } = {}) {
           } }, "Forget saved keys"))
       : null;
     return [form, forget];
-  }, { closable: add });
+  }, { backdrop: false });
 }
 
 function updateBanner() {
@@ -231,6 +263,7 @@ function updateBanner() {
 async function addKey() {
   const added = await keyDialog({ add: true });
   if (!added) return;
+  catalogs.reset();                         // a newer catalog may open now
   const next = await openNewest();          // also reloads the translations and the PDF index
   if (next && next.payload.file !== loaded.payload.file) {
     const keep = view.currentMaterial();
@@ -244,6 +277,33 @@ async function addKey() {
   updateBanner();
 }
 
+// The machine / powder catalogs: fetched the first time, behind a progress
+// dialog when that takes more than a moment.
+async function openCatalog(kind) {
+  const name = kind === "machines" ? "machine" : "powder";
+  let dlg = null;
+  const timer = setTimeout(() => { dlg = progressDialog(`Loading the ${name} catalog`); }, 250);
+  let cat;
+  try {
+    cat = await catalogs.load(kind, (got, total) => dlg?.set(got, total));
+  } catch (e) {
+    clearTimeout(timer);
+    dlg?.close();
+    messageBox(`${name[0].toUpperCase()}${name.slice(1)} catalog unavailable`, String(e.message || e), "warn");
+    return;
+  }
+  clearTimeout(timer);
+  dlg?.close();
+  const opts = { isMobile: () => layoutMode() === "mobile" };
+  if (kind === "machines") openMachinesWindow(cat, opts);
+  else openPowdersWindow(cat, opts);
+}
+
+function openSubmit() {
+  const keyId = loaded.payload.key_id;
+  openSubmitDialog({ db: loaded.db, keyId, passphrase: keystore[keyId] });
+}
+
 function show(result) {
   loaded = result;
   view = null;
@@ -254,11 +314,15 @@ function show(result) {
     keystore: () => keystore,
     onAddKey: addKey,
     onToggleLayout: toggleLayout,
+    onSubmit: openSubmit,
+    onMachines: () => openCatalog("machines"),
+    onPowders: () => openCatalog("powders"),
   });
   applyLayout();
 }
 
 async function boot() {
+  resetWindowHistory();
   installTooltips();
   applyLayout();
   mq.addEventListener("change", applyLayout);
@@ -278,7 +342,11 @@ async function boot() {
     ? "The key saved in this browser does not open any release here." : "";
   while (!result) {
     status("Locked");
-    await keyDialog({ message });
+    if ((await keyDialog({ message })) === undefined) {
+      await locked();
+      message = "";
+      continue;
+    }
     result = await openNewest();
     message = "That key did not open a release.";
   }

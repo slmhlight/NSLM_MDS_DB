@@ -45,7 +45,7 @@ export function isHttpUrl(u) {
   return typeof u === "string" && /^https?:\/\//i.test(u.trim());
 }
 
-// h("div", {class: "x", onclick: fn}, child, "text", ...)
+// h("div", {class: "x", onclick: fn}, child, "text", [nested, [lists]], ...)
 export function h(tag, attrs, ...children) {
   const el = tag.startsWith("svg:")
     ? document.createElementNS("http://www.w3.org/2000/svg", tag.slice(4))
@@ -60,7 +60,7 @@ export function h(tag, attrs, ...children) {
     else if (v === true) el.setAttribute(k, "");
     else el.setAttribute(k, v);
   }
-  for (const c of children.flat()) {
+  for (const c of children.flat(Infinity)) {
     if (c === null || c === undefined || c === false) continue;
     el.append(c instanceof Node ? c : document.createTextNode(String(c)));
   }
@@ -149,7 +149,9 @@ export function toast(text, ms = 3200) {
 }
 
 // ---- modal dialog. build(close) returns the body; resolves with close(value).
-export function modal(title, build, { closable = true, wide = false } = {}) {
+// closable: Escape closes it; backdrop: so does a click beside it (off for
+// dialogs holding typed input, where a stray click would lose it).
+export function modal(title, build, { closable = true, wide = false, backdrop = true } = {}) {
   return new Promise((resolve) => {
     const prevFocus = document.activeElement;
     let done = false;
@@ -169,11 +171,32 @@ export function modal(title, build, { closable = true, wide = false } = {}) {
       h("div", { class: "dialog-title" }, title),
       h("div", { class: "dialog-body" }, build(close)));
     const back = h("div", { class: "dialog-back" }, dlg);
-    if (closable) back.addEventListener("mousedown", (e) => { if (e.target === back) close(undefined); });
+    if (closable && backdrop) back.addEventListener("mousedown", (e) => { if (e.target === back) close(undefined); });
     document.addEventListener("keydown", onKey, true);
     document.body.append(back);
     (dlg.querySelector("[autofocus]") || dlg.querySelector("button"))?.focus();
   });
+}
+
+// A download in progress: set(bytesSoFar, total), then close().
+export function progressDialog(title) {
+  let done = null;
+  const text = h("div", { class: "progress-text" }, "Downloading…");
+  const bar = h("progress", { max: "1", value: "0" });
+  modal(title, (close) => { done = close; return [text, bar]; }, { closable: false });
+  const mb = (n) => (n / 1048576).toFixed(1);
+  return {
+    set(got, total) {
+      if (total && got >= total) {
+        text.textContent = "Decrypting…";
+        bar.removeAttribute("value");
+        return;
+      }
+      text.textContent = total ? `Downloading… ${mb(got)} / ${mb(total)} MB` : `Downloading… ${mb(got)} MB`;
+      if (total) bar.value = got / total;
+    },
+    close: () => done?.(undefined),
+  };
 }
 
 // QMessageBox.information / .warning

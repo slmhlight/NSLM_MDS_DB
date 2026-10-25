@@ -98,20 +98,15 @@ export function mountMaterialView(host, ctx) {
   const matSel = h("select", { class: "combo mat", "aria-label": "Material" });
   const catLbl = h("span", { class: "catlbl" });
 
-  const soon = "\n\nComing to the web viewer in a later step — use the desktop app for now.";
-  // Not ported yet: drawn like the desktop's disabled button, but a click
-  // still says why (a disabled button would not even show its tooltip).
-  const toolBtn = (label, tip, onclick) => onclick
-    ? h("button", { class: "tool", type: "button", tip, onclick }, label)
-    : h("button", { class: "tool soon", type: "button", tip, "aria-disabled": "true",
-                    onclick: () => toast(`${label.replace("…", "")} is coming to the web viewer in a later step.`) }, label);
+  const toolBtn = (label, tip, onclick) => h("button", { class: "tool", type: "button", tip, onclick }, label);
   const tools = h("div", { class: "tools" },
-    toolBtn("Submit TDS data…", "Submit a new vendor entry (or new material) based on a published TDS." + soon),
+    toolBtn("Submit TDS data…", "Submit a new vendor entry (or new material) based on a published TDS.\n"
+      + "It goes to the maintainer as a GitHub issue, encrypted with your release key.", ctx.onSubmit),
     toolBtn("🔧 Machines…", "Open the LPBF/AM machine hardware catalog: build volumes,\n"
       + "laser configs, layer ranges, approximate prices, product\nimages, and links to each "
-      + "manufacturer's page." + soon),
+      + "manufacturer's page.", ctx.onMachines),
     toolBtn("⚗ Powders…", "Third-party LPBF powder suppliers: alloy, particle size,\natomization, "
-      + "flow/density, and whether the vendor has\nvalidated the powder on a named OEM machine." + soon),
+      + "flow/density, and whether the vendor has\nvalidated the powder on a named OEM machine.", ctx.onPowders),
     toolBtn("Add release key…", "Paste a new release key you received from the maintainer.\n"
       + "It is saved in this browser, and a newer release it unlocks loads right away.", ctx.onAddKey),
     h("button", { class: "tool layout", type: "button", "aria-label": "Switch layout",
@@ -129,7 +124,6 @@ export function mountMaterialView(host, ctx) {
 
   let current = null;
   let currentCat = ALL;
-  const attached = new Map();     // material -> PDFs attached this session [{name, url}]
 
   function populate(cat, keep) {
     const shown = cat === ALL ? names : names.filter((m) => matToCat[m] === cat);
@@ -437,7 +431,9 @@ export function mountMaterialView(host, ctx) {
     toast(`Generated report from ${selected.length} entries.\n${name}`);
   }
 
-  // ---- reference / MDS: collapsible, default closed ----
+  // ---- reference / MDS: collapsible, default closed. The maintainer's
+  // reference PDFs arrive encrypted (data/archive/refs/); there is no
+  // attaching here, a browser has nowhere to keep the file.
   function referenceBox(matName, props) {
     const urls = Array.isArray(props.ref_urls) ? props.ref_urls : [];
     const published = ctx.refs.list(matName);
@@ -445,12 +441,6 @@ export function mountMaterialView(host, ctx) {
     const arrow = h("span", { class: "arrow" }, "▶");
     const toggle = h("button", { type: "button", class: "ref-toggle", "aria-expanded": "false" },
       arrow, `  ◆ Reference / MDS (${urls.length + published.length})  `);
-    const fileInput = h("input", { type: "file", accept: "application/pdf,.pdf", hidden: true });
-    const attach = h("button", { type: "button", class: "btn attach",
-                                 tip: "Attach a local PDF as a reference for this session.\n"
-                                   + "To share a PDF with everyone, the maintainer publishes it\n"
-                                   + "encrypted; it then opens here for anyone holding the key.",
-                                 onclick: () => fileInput.click() }, T("MD_PDF_ATTACH"));
     let checked = false;
     toggle.addEventListener("click", () => {
       const open = content.hidden;
@@ -512,29 +502,9 @@ export function mountMaterialView(host, ctx) {
       pendingChecks.push(() => ctx.refs.exists(entry).then(r.setOk));
       content.append(r.el);
     }
-    const sessionRow = ({ name, url }) => {
-      const r = row("Local PDF (attached)", name, "local", () => window.open(url, "_blank"));
-      r.setOk(true);
-      return r.el;
-    };
-    const mine = attached.get(matName) || [];
-    content.append(...mine.map(sessionRow));
-    if (!urls.length && !published.length && !mine.length) content.append(h("div", { class: "ref-none" }, T("MD_NO_REF")));
+    if (!urls.length && !published.length) content.append(h("div", { class: "ref-none" }, T("MD_NO_REF")));
 
-    fileInput.addEventListener("change", () => {
-      const file = fileInput.files?.[0];
-      fileInput.value = "";
-      if (!file) return;
-      const pdf = { name: file.name, url: URL.createObjectURL(file) };
-      attached.set(matName, [...(attached.get(matName) || []), pdf]);
-      content.querySelector(".ref-none")?.remove();
-      content.append(sessionRow(pdf));
-      if (content.hidden) toggle.click();
-      toast(`${file.name} attached for this session.`);
-    });
-
-    return h("fieldset", { class: "refbox" },
-      h("div", { class: "ref-header" }, toggle, h("span", { class: "stretch" }), attach, fileInput), content);
+    return h("fieldset", { class: "refbox" }, h("div", { class: "ref-header" }, toggle), content);
   }
 
   async function openPublished(entry, button, r) {
@@ -614,8 +584,10 @@ export function chartData(entries, metric) {
     const manuf = pySlice(pyOr(vd, "manufacturer", "?"), 12);
     const machine = pyOr(vd, "machine", "");
     const post = pyOr(vd, "post_treatment", "");
-    const lt = pyStr(vd, "layer_thickness_um", "?");
-    const parts = [manuf, `${pySlice(machine, 10)} ${lt}μm`.trim()];
+    // No layer -> no layer text (it used to read "Noneμm"), and no empty line.
+    const lt = truthy(vd.layer_thickness_um) ? ` ${pyStr(vd, "layer_thickness_um")}μm` : "";
+    const lbl2 = (pySlice(machine, 10) + lt).trim();
+    const parts = lbl2 ? [manuf, lbl2] : [manuf];
     if (post && post.toLowerCase() !== "as-built") parts.push(`(${pySlice(post, 8)})`);
     let lo = null, hi = null, bad = false;
     const vr = isDict(vd._value_ranges) ? vd._value_ranges : {};

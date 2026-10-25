@@ -204,15 +204,76 @@ export function safeNum(v, dflt = 0) {
 export function pyFixed(x, d) {
   if (Number.isNaN(x)) return "nan";
   if (!Number.isFinite(x)) return x > 0 ? "inf" : "-inf";
-  const out = x.toFixed(d);
+  const zeros = d ? `.${"0".repeat(d)}` : "";
+  if (x === 0) return `${Object.is(x, -0) ? "-" : ""}0${zeros}`;
   const ax = Math.abs(x);
-  if (ax >= 1e21) return out;
+  // toFixed switches to exponent form here; such a double is a whole number.
+  if (ax >= 1e21) return `${x < 0 ? "-" : ""}${exactDecimal(ax).digits}${zeros}`;
+  const out = x.toFixed(d);
   const full = ax.toFixed(100);
   const dot = full.indexOf(".");
   if (!/^50*$/.test(full.slice(dot + 1 + d))) return out;
   const kept = d ? full.slice(0, dot + 1 + d) : full.slice(0, dot);
   if (Number(kept[kept.length - 1]) % 2 !== 0) return out;        // odd: both round up
   return (x < 0 ? "-" : "") + kept;
+}
+
+// The exact decimal value of a finite x > 0: its digits (no leading zero)
+// and the power of ten of the first one. A double is mant * 2^e2, and
+// 2^-k = 5^k / 10^k, so BigInt spells it out with nothing rounded.
+function exactDecimal(x) {
+  const dv = new DataView(new ArrayBuffer(8));
+  dv.setFloat64(0, x);
+  const hi = dv.getUint32(0), lo = dv.getUint32(4);
+  const bexp = (hi >>> 20) & 0x7ff;
+  let mant = (BigInt(hi & 0xfffff) << 32n) | BigInt(lo);
+  let e2 = -1074;
+  if (bexp) { mant |= 1n << 52n; e2 = bexp - 1075; }
+  const digits = e2 >= 0 ? (mant << BigInt(e2)).toString() : (mant * 5n ** BigInt(-e2)).toString();
+  return { digits, exp: digits.length - 1 - (e2 >= 0 ? 0 : -e2) };
+}
+
+// format(x, "g"), i.e. f"{x:g}": 6 significant digits rounded half-to-even
+// on the exact value, trailing zeros dropped, exponent form below 1e-4 and
+// from 1e6 up ("1e+06"). Like Python, anything but a number raises.
+export function pyFormatG(x, p = 6) {
+  if (typeof x === "boolean") x = Number(x);
+  if (typeof x !== "number") throw new TypeError("unsupported format string passed to format(..., 'g')");
+  if (Number.isNaN(x)) return "nan";
+  if (!Number.isFinite(x)) return x > 0 ? "inf" : "-inf";
+  if (x === 0) return Object.is(x, -0) ? "-0" : "0";
+  let { digits, exp } = exactDecimal(Math.abs(x));
+  if (digits.length > p) {
+    let head = digits.slice(0, p);
+    const next = digits.charCodeAt(p) - 48;
+    const up = next > 5 || (next === 5 && (/[1-9]/.test(digits.slice(p + 1))
+                                            || (head.charCodeAt(p - 1) - 48) % 2 === 1));
+    if (up) {
+      const n = (BigInt(head) + 1n).toString();
+      if (n.length > p) exp += 1;
+      head = n.slice(0, p);
+    }
+    digits = head;
+  }
+  digits = digits.replace(/0+$/, "");
+  const sign = x < 0 ? "-" : "";
+  if (exp >= -4 && exp < p) {
+    if (exp < 0) return `${sign}0.${"0".repeat(-exp - 1)}${digits}`;
+    const int = digits.slice(0, exp + 1).padEnd(exp + 1, "0");
+    const frac = digits.slice(exp + 1);
+    return sign + (frac ? `${int}.${frac}` : int);
+  }
+  const mant = digits.length > 1 ? `${digits[0]}.${digits.slice(1)}` : digits;
+  return `${sign}${mant}e${exp < 0 ? "-" : "+"}${String(Math.abs(exp)).padStart(2, "0")}`;
+}
+
+// Python's str < str: by code point (JS's < goes by UTF-16 unit, which
+// differs only beyond the BMP).
+export function pyCmp(a, b) {
+  if (a === b) return 0;
+  const x = Array.from(a, (c) => c.codePointAt(0)), y = Array.from(b, (c) => c.codePointAt(0));
+  for (let i = 0; i < Math.min(x.length, y.length); i++) if (x[i] !== y[i]) return x[i] < y[i] ? -1 : 1;
+  return x.length - y.length;
 }
 
 // round(x) for an int result: halves go to the even neighbour.
