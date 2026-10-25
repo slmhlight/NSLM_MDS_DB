@@ -2,6 +2,14 @@
  "format": 1,
  "payloads": [
   {
+   "file": "machines_2026-10-25.enc",
+   "kind": "machines",
+   "date": "2026-10-25",
+   "key_id": "2026-10-25",
+   "size": 10141241,
+   "v": "2506edf3b0da"
+  },
+  {
    "file": "machines_2026-09-10.enc",
    "kind": "machines",
    "date": "2026-09-10",
@@ -24,6 +32,14 @@
    "key_id": "2026-08-13",
    "size": 10141241,
    "v": "ad7ece303fce"
+  },
+  {
+   "file": "material_db_2026-10-25.enc",
+   "kind": "material_db",
+   "date": "2026-10-25",
+   "key_id": "2026-10-25",
+   "size": 724382,
+   "v": "372549e23c80"
   },
   {
    "file": "material_db_2026-10-13.enc",
@@ -106,6 +122,14 @@
    "v": "f25762d9f6aa"
   },
   {
+   "file": "powders_2026-10-25.enc",
+   "kind": "powders",
+   "date": "2026-10-25",
+   "key_id": "2026-10-25",
+   "size": 62038,
+   "v": "f19c2235512b"
+  },
+  {
    "file": "powders_2026-09-10.enc",
    "kind": "powders",
    "date": "2026-09-10",
@@ -130,12 +154,12 @@
    "v": "e3c19a3b1b17"
   },
   {
-   "file": "ui/tr_2026-09-10.enc",
+   "file": "ui/tr_2026-10-25.enc",
    "kind": "tr",
-   "date": "2026-10-13",
-   "key_id": "2026-09-10",
+   "date": "2026-10-25",
+   "key_id": "2026-10-25",
    "size": 4934,
-   "v": "e53432b9fcc1"
+   "v": "dd83d6448d32"
   }
  ]
 }

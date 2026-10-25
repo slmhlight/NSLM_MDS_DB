@@ -615,7 +615,9 @@ function rowTooltip(vd, tds) {
   const mod = vd._modulus_GPa_range;
   if (truthy(mod) && Array.isArray(mod) && mod.length === 2) parts.push(`Modulus: ${pyStr(mod, 0)}–${pyStr(mod, 1)} GPa`);
   if (vd._hardness_HRC !== undefined && vd._hardness_HRC !== null) parts.push(`Hardness: HRC ${pyStr(vd, "_hardness_HRC")}`);
+  if (vd._hardness_HRB !== undefined && vd._hardness_HRB !== null) parts.push(`Hardness: HRB ${pyStr(vd, "_hardness_HRB")}`);
   if (vd._hardness_HRBW !== undefined && vd._hardness_HRBW !== null) parts.push(`Hardness: HRBW ${pyStr(vd, "_hardness_HRBW")}`);
+  if (vd._hardness_HB !== undefined && vd._hardness_HB !== null) parts.push(`Hardness: HB ${pyStr(vd, "_hardness_HB")}`);
   const vr = truthy(vd._value_ranges) && isDict(vd._value_ranges) ? vd._value_ranges : null;
   if (vr) {
     const lines = [];
