@@ -2,6 +2,14 @@
  "format": 1,
  "payloads": [
   {
+   "file": "machines_2026-11-05.enc",
+   "kind": "machines",
+   "date": "2026-11-05",
+   "key_id": "2026-10-25",
+   "size": 10641098,
+   "v": "732527195cf9"
+  },
+  {
    "file": "machines_2026-10-25.enc",
    "kind": "machines",
    "date": "2026-10-25",
