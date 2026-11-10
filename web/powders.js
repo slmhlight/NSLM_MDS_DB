@@ -332,7 +332,8 @@ export function openPowdersWindow(cat, { isMobile }) {
       h("span", { class: "stretch" }), count);
     const foot = h("div", { class: "cat-foot" }, "Gates — ", h("b", {}, "A"), " vendor markets it for AM/PBF · ",
       h("b", {}, "B"), " PSD suits LPBF · ", h("b", {}, "C"), " validated on a named OEM machine (strongest). "
-      + `Gates are independent. ${stat("lpbf_suitable")} LPBF-suitable of ${stat("powders")} records. `,
+      + `Gates are independent. ${stat("lpbf_suitable")} LPBF-suitable of ${stat("powders")} records `
+      + `(${stat("coarse")} coarse, ${stat("psd_unknown")} PSD not published). `,
       h("span", { class: "dim" }, pyStr(doc, "_updated", "")));
     return [bar, catSplit(table.el, h("div", { class: "cat-detail" }, detailTxt), "powders"), foot];
   }, { className: "catalog powders" });
