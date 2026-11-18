@@ -161,12 +161,18 @@ function statusDisp(m) {
     : m.product_status === "discontinued" ? "○ discontinued" : "? unknown";
 }
 
+// process category (PBF-LB / PBF-EB / DED / WAAM ...)
+function processDisp(m) {
+  return truthy(m.process) ? pyStr(m, "process") : "-";
+}
+
 // COLUMNS: (header, display, sort role); column 0 is the picture.
 export const COLUMNS = [
   ["", null, (m) => I(truthy(m.image_path) ? 1 : 0)],
   ["Manufacturer", (m) => (Object.hasOwn(m, "manufacturer") ? m.manufacturer : "-"), (m) => tagged(m, "manufacturer", "")],
   ["Model", (m) => (Object.hasOwn(m, "model_canonical") ? m.model_canonical : "-"), (m) => tagged(m, "model_canonical", "")],
   ["Status", statusDisp, (m) => tagged(m, "product_status", "z")],
+  ["Process", processDisp, (m) => tagged(m, "process", "")],
   ["Build vol (mm)", fmtBuild, (m) => D(buildSortKey(m))],
   ["Lasers", laserCountDisp, (m) => D(laserCountSort(m))],
   ["Power (W)", laserPowerDisp, (m) => D(laserPowerSort(m))],
@@ -176,7 +182,7 @@ export const COLUMNS = [
   ["Released", fmtRelease, (m) => D(releaseSortKey(m))],
 ];
 // Columns whose values are numeric and right-aligned.
-const NUMERIC_COLS = [4, 5, 6, 8, 9, 10];
+const NUMERIC_COLS = [5, 6, 7, 9, 10, 11];
 
 // MachineModel.data(DisplayRole): a failing formatter shows "-".
 export function displayText(m, col) {
@@ -201,9 +207,11 @@ export function sortValue(m, col) {
 export function accepts(m, f) {
   if (f.vendor && m.vendor_slug !== f.vendor) return false;
   if (f.status && m.product_status !== f.status) return false;
+  if (f.process && m.process !== f.process) return false;
   if (f.text) {
     const aliases = truthy(m.model_aliases) && isList(m.model_aliases) ? m.model_aliases.map((a) => strValue(a)).join(" ") : "";
-    const hay = [pyStr(m, "manufacturer", ""), pyStr(m, "model_canonical", ""), aliases, pyStr(m, "notes", "")]
+    const hay = [pyStr(m, "manufacturer", ""), pyStr(m, "model_canonical", ""), aliases, pyStr(m, "process", ""),
+      pyStr(m, "notes", "")]
       .join(" ").toLowerCase();
     if (!hay.includes(f.text)) return false;
   }
@@ -239,6 +247,7 @@ export function specItems(m) {
   return [
     ["Manufacturer", raw(m, "manufacturer")],
     ["Status", raw(m, "product_status")],
+    ["Process", raw(m, "process")],
     ["Released", raw(m, "release_year")],
     ["Build volume", bvStr],
     ["Lasers", truthy(m.laser_count) ? laserCountDisp(m) : null],
@@ -307,6 +316,7 @@ export function detailRows(m) {
   const rel = Object.hasOwn(m, "release_year") && m.release_year !== null ? pyStr(m, "release_year") : null;
   return [
     ["Status", statusNode],
+    ["Process", truthy(m.process) ? pyStr(m, "process") : null],
     ["Released", rel],
     ["Build volume", bvStr],
     ["Lasers", fmtLasers(m)],
@@ -353,7 +363,8 @@ export function openMachinesWindow(cat, { isMobile }) {
   const doc = cat.doc;
   const machines = Object.values(isDict(doc.machines) ? doc.machines : {}).filter(isDict);
   const vendors = isDict(doc._vendors) ? doc._vendors : {};
-  const filter = { vendor: null, status: null, text: "" };
+  const filter = { vendor: null, status: null, process: null, text: "" };
+  const processes = [...new Set(machines.map((m) => m.process).filter((p) => typeof p === "string" && p))].sort();
 
   return openWindow("MDS Viewer — Machine Catalog", (win) => {
     const proxy = new SortFilterProxy(machines.length, (s, c) => sortValue(machines[s], c),
@@ -365,6 +376,9 @@ export function openMachinesWindow(cat, { isMobile }) {
     const statusCombo = h("select", { class: "combo", "aria-label": "Status" },
       h("option", { value: "" }, "All"), h("option", { value: "active" }, "Active only"),
       h("option", { value: "discontinued" }, "Discontinued only"));
+    const processCombo = h("select", { class: "combo", "aria-label": "Process" },
+      h("option", { value: "" }, "All processes"),
+      processes.map((p) => h("option", { value: p }, p)));
     const search = h("input", { type: "search", class: "combo search", placeholder: "model, alias, or keyword…",
                                 "aria-label": "Search", autocomplete: "off" });
     const compareBtn = h("button", { type: "button", class: "tool compare",
@@ -418,6 +432,7 @@ export function openMachinesWindow(cat, { isMobile }) {
     const updateCount = () => { count.textContent = `${proxy.rows.length} / ${machines.length} machines`; };
     vendorCombo.addEventListener("change", () => { filter.vendor = vendorCombo.value || null; table.refilter(); updateCount(); });
     statusCombo.addEventListener("change", () => { filter.status = statusCombo.value || null; table.refilter(); updateCount(); });
+    processCombo.addEventListener("change", () => { filter.process = processCombo.value || null; table.refilter(); updateCount(); });
     search.addEventListener("input", () => { filter.text = search.value.trim().toLowerCase(); table.refilter(); updateCount(); });
 
     compareBtn.addEventListener("click", () => {
@@ -440,6 +455,7 @@ export function openMachinesWindow(cat, { isMobile }) {
       h("span", { class: "cat-title" }, "🔧 LPBF / AM Machine Catalog"),
       h("label", { class: "field" }, h("span", { class: "lbl" }, "Vendor:"), vendorCombo),
       h("label", { class: "field" }, h("span", { class: "lbl" }, "Status:"), statusCombo),
+      h("label", { class: "field" }, h("span", { class: "lbl" }, "Process:"), processCombo),
       h("label", { class: "field" }, h("span", { class: "lbl" }, "Search:"), search),
       compareBtn, h("span", { class: "stretch" }), count);
     const foot = h("div", { class: "cat-foot" },

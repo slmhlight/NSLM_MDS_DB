@@ -2,6 +2,14 @@
  "format": 1,
  "payloads": [
   {
+   "file": "machines_2026-11-19.enc",
+   "kind": "machines",
+   "date": "2026-11-19",
+   "key_id": "2026-10-25",
+   "size": 12729007,
+   "v": "fdb28030b73c"
+  },
+  {
    "file": "machines_2026-11-05.enc",
    "kind": "machines",
    "date": "2026-11-05",
@@ -128,6 +136,14 @@
    "key_id": "2026-05-24",
    "size": 402392,
    "v": "f25762d9f6aa"
+  },
+  {
+   "file": "powders_2026-11-19.enc",
+   "kind": "powders",
+   "date": "2026-11-19",
+   "key_id": "2026-10-25",
+   "size": 72441,
+   "v": "2cbef1c78885"
   },
   {
    "file": "powders_2026-11-10.enc",
